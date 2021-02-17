@@ -22,14 +22,21 @@ function run_benchmarks(; load_params=true, save_params=false)
 
     n_out = 101
     t_out = range(t[1], t[end], length=n_out)
+    x_out = similar(t_out)
+    y_out = similar(t_out)
+
+    foos_out = Foo3.(t_out, x_out, y_out)
 
     suite = BenchmarkGroup()
 
     s_akima = suite["akima"] = BenchmarkGroup()
     s_akima_gp = s_akima["getproperty"] = @benchmarkable akima_getproperty($foos, $t_out)
     s_akima_cache = s_akima["cache"] = @benchmarkable akima_cache($foos, $t_out, $cache)
-    s_akima_cache = s_akima["cache_loop"] = @benchmarkable akima_cache_loop($foos, $t_out, $cache)
+    s_akima_cache_loop = s_akima["cache_loop"] = @benchmarkable akima_cache_loop($foos, $t_out, $cache)
+
+    s_akima_cache_loop_no_alloc = s_akima["cache_loop_no_alloc"] = @benchmarkable akima_cache_loop_no_alloc!($x_out, $y_out, $foos, $t_out, $cache)
     s_akima_sfsa = s_akima["SingleFieldStructArray"] = @benchmarkable akima_sfsa($foos, $t_out)
+    s_akima_sfsa_no_alloc = s_akima["SingleFieldStructArray_no_alloc"] = @benchmarkable akima_sfsa_no_alloc!($foos_out, $foos)
 
     if load_params && isfile(paramsfile)
         # Load the benchmark parameters.
@@ -67,9 +74,6 @@ end
 
 # No SingleFieldStructArray, use cache to avoid allocating inside the function.
 function akima_cache(foos, t_out, cache)
-    # cache.t .= getproperty.(foos, :t)
-    # cache.x .= getproperty.(foos, :x)
-    # cache.y .= getproperty.(foos, :y)
     @. cache.t = getproperty(foos, :t)
     @. cache.x = getproperty(foos, :x)
     @. cache.y = getproperty(foos, :y)
@@ -107,6 +111,41 @@ function akima_sfsa(foos, t_out)
     return x_out, y_out
 end
 
+# No SingleFieldStructArray, use cache to avoid allocating inside the function,
+# and just do one loop. Mutating the outputs.
+function akima_cache_loop_no_alloc!(x_out, y_out, foos, t_out, cache)
+    for i in eachindex(foos)
+        cache.t[i] = foos[i].t
+        cache.x[i] = foos[i].x
+        cache.y[i] = foos[i].y
+    end
+
+    spline = Akima(cache.t, cache.x)
+    x_out .= spline.(t_out)
+    spline = Akima(cache.t, cache.y)
+    y_out .= spline.(t_out)
+
+    return nothing
+end
+
+# SingleFieldStructArray, mutating.
+function akima_sfsa_no_alloc!(foos_out, foos)
+    t = SingleFieldStructArray(foos, :t)
+    x = SingleFieldStructArray(foos, :x)
+    y = SingleFieldStructArray(foos, :y)
+
+    t_out = SingleFieldStructArray(foos_out, :t)
+    x_out = SingleFieldStructArray(foos_out, :x)
+    y_out = SingleFieldStructArray(foos_out, :y)
+
+    spline = Akima(t, x)
+    x_out .= spline.(t_out)
+    spline = Akima(t, y)
+    y_out .= spline.(t_out)
+
+    return nothing
+end
+
 function compare_benchmarks(; load_params=true, save_params=false)
     suite, results = run_benchmarks(load_params=load_params, save_params=save_params)
 
@@ -114,11 +153,6 @@ function compare_benchmarks(; load_params=true, save_params=false)
     rold = results["akima"]["getproperty"]
     rnew = results["akima"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
-
-    # println("cache vs getproperty, Akima interpolation:")
-    # rold = results["akima"]["getproperty"]
-    # rnew = results["akima"]["cache"]
-    # display(judge(median(rnew), median(rold)))
 
     println("SingleFieldStructArrays vs cache, Akima interpolation:")
     rold = results["akima"]["cache"]
@@ -130,5 +164,14 @@ function compare_benchmarks(; load_params=true, save_params=false)
     rnew = results["akima"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
+    println("SingleFieldStructArrays mutating vs cache with loop mutating, Akima interpolation:")
+    rold = results["akima"]["cache_loop_no_alloc"]
+    rnew = results["akima"]["SingleFieldStructArray_no_alloc"]
+    display(judge(median(rnew), median(rold)))
+
     return suite, results
+end
+
+if !isinteractive()
+    compare_benchmarks(load_params=false, save_params=true)
 end
