@@ -11,6 +11,13 @@ struct Foo3{T1,T2,T3}
     y::T3
 end
 
+struct Foo3Array{T1,T2,T3,T4}
+    t::T1
+    x::T2
+    y::T3
+    z::T4
+end
+
 function run_benchmarks(; load_params=true, save_params=false)
     n_cp = 11
     t = range(0.0, 1.0, length=n_cp)
@@ -29,14 +36,15 @@ function run_benchmarks(; load_params=true, save_params=false)
 
     suite = BenchmarkGroup()
 
-    s_akima = suite["akima"] = BenchmarkGroup()
-    s_akima_gp = s_akima["getproperty"] = @benchmarkable akima_getproperty($foos, $t_out)
-    s_akima_cache = s_akima["cache"] = @benchmarkable akima_cache($foos, $t_out, $cache)
-    s_akima_cache_loop = s_akima["cache_loop"] = @benchmarkable akima_cache_loop($foos, $t_out, $cache)
+    s_scalars = suite["struct_scalars"] = BenchmarkGroup()
 
-    s_akima_cache_loop_no_alloc = s_akima["cache_loop_no_alloc"] = @benchmarkable akima_cache_loop_no_alloc!($x_out, $y_out, $foos, $t_out, $cache)
-    s_akima_sfsa = s_akima["SingleFieldStructArray"] = @benchmarkable akima_sfsa($foos, $t_out)
-    s_akima_sfsa_no_alloc = s_akima["SingleFieldStructArray_no_alloc"] = @benchmarkable akima_sfsa_no_alloc!($foos_out, $foos)
+    s_scalars["getproperty"] = @benchmarkable akima_getproperty($foos, $t_out)
+    s_scalars["cache"] = @benchmarkable akima_cache($foos, $t_out, $cache)
+    s_scalars["cache_loop"] = @benchmarkable akima_cache_loop($foos, $t_out, $cache)
+
+    s_scalars["cache_loop_no_alloc"] = @benchmarkable akima_cache_loop_no_alloc!($x_out, $y_out, $foos, $t_out, $cache)
+    s_scalars["SingleFieldStructArray"] = @benchmarkable akima_sfsa($foos, $t_out)
+    s_scalars["SingleFieldStructArray_no_alloc"] = @benchmarkable akima_sfsa_no_alloc!($foos_out, $foos)
 
     if load_params && isfile(paramsfile)
         # Load the benchmark parameters.
@@ -88,9 +96,9 @@ end
 # and just do one loop.
 function akima_cache_loop(foos, t_out, cache)
     for i in eachindex(foos)
-        cache.t[i] = foos[i].t
-        cache.x[i] = foos[i].x
-        cache.y[i] = foos[i].y
+        @inbounds cache.t[i] = foos[i].t
+        @inbounds cache.x[i] = foos[i].x
+        @inbounds cache.y[i] = foos[i].y
     end
 
     x_out = akima(cache.t, cache.x, t_out)
@@ -115,9 +123,9 @@ end
 # and just do one loop. Mutating the outputs.
 function akima_cache_loop_no_alloc!(x_out, y_out, foos, t_out, cache)
     for i in eachindex(foos)
-        cache.t[i] = foos[i].t
-        cache.x[i] = foos[i].x
-        cache.y[i] = foos[i].y
+        @inbounds cache.t[i] = foos[i].t
+        @inbounds cache.x[i] = foos[i].x
+        @inbounds cache.y[i] = foos[i].y
     end
 
     spline = Akima(cache.t, cache.x)
@@ -149,24 +157,24 @@ end
 function compare_benchmarks(; load_params=true, save_params=false)
     suite, results = run_benchmarks(load_params=load_params, save_params=save_params)
 
-    println("SingleFieldStructArrays vs getproperty, Akima interpolation:")
-    rold = results["akima"]["getproperty"]
-    rnew = results["akima"]["SingleFieldStructArray"]
+    println("SingleFieldStructArrays vs getproperty, scalars:")
+    rold = results["struct_scalars"]["getproperty"]
+    rnew = results["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
-    println("SingleFieldStructArrays vs cache, Akima interpolation:")
-    rold = results["akima"]["cache"]
-    rnew = results["akima"]["SingleFieldStructArray"]
+    println("SingleFieldStructArrays vs cache, scalars:")
+    rold = results["struct_scalars"]["cache"]
+    rnew = results["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
-    println("SingleFieldStructArrays vs cache with loop, Akima interpolation:")
-    rold = results["akima"]["cache_loop"]
-    rnew = results["akima"]["SingleFieldStructArray"]
+    println("SingleFieldStructArrays vs cache with loop, scalars:")
+    rold = results["struct_scalars"]["cache_loop"]
+    rnew = results["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
-    println("SingleFieldStructArrays mutating vs cache with loop mutating, Akima interpolation:")
-    rold = results["akima"]["cache_loop_no_alloc"]
-    rnew = results["akima"]["SingleFieldStructArray_no_alloc"]
+    println("SingleFieldStructArrays mutating vs cache with loop mutating, scalars:")
+    rold = results["struct_scalars"]["cache_loop_no_alloc"]
+    rnew = results["struct_scalars"]["SingleFieldStructArray_no_alloc"]
     display(judge(median(rnew), median(rold)))
 
     return suite, results
