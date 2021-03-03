@@ -10,6 +10,42 @@ end
     SingleFieldStructArray(data, fieldname::Symbol)
 
 Create a SingleFieldStructArray from an array of structs (`data`) that acts like an array of the values of `fieldname`. 
+
+# Examples
+```jldoctest
+julia> struct Foo3{T} a::T; b::T; c::T; end
+julia> foo3s = Foo3.(1:5, 6:10, 11:15)
+5-element Array{Foo3{Int64},1}:
+ Foo3{Int64}(1, 6, 11)
+ Foo3{Int64}(2, 7, 12)
+ Foo3{Int64}(3, 8, 13)
+ Foo3{Int64}(4, 9, 14)
+ Foo3{Int64}(5, 10, 15)
+
+julia> as = SingleFieldStructArray(foo3s, :a)
+5-element SingleFieldStructArray{Array{Foo3{Int64},1},Foo3{Int64},:a,Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+
+julia> as[3] == 3
+true
+
+julia> as[3] = -1
+-1
+
+julia> foo3s
+5-element Array{Foo3{Int64},1}:
+ Foo3{Int64}(1, 6, 11)
+ Foo3{Int64}(2, 7, 12)
+ Foo3{Int64}(-1, 8, 13)
+ Foo3{Int64}(4, 9, 14)
+ Foo3{Int64}(5, 10, 15)
+
+julia>
+```
 """
 function SingleFieldStructArray(data, fieldname::Symbol)
     TData = typeof(data)
