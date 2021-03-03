@@ -65,7 +65,7 @@ x_in = getproperty.(foos, :x)
 and then pass that to the interpolation routine:
 
 ```julia
-n_out = 101
+n_out = 1001
 t_out = range(0.0, 1.0, length=n_out)
 x_out = akima(t_in, x_in, t_out)
 ```
@@ -88,3 +88,95 @@ The `SingleFieldStructArray` constructor takes two arguments: the
 indicating the single field of the `struct` the `SingleFieldStructArray` will
 work with. The `SingleFieldStructArray` is `<:AbstractArray{T, N}`, where the
 type `T` matches the type of `fieldtype(eltype(typeof(data)), fieldname)`.
+
+## Performance
+But is this any faster? Let's try it out:
+```julia
+using BenchmarkTools
+
+function akima_getproperty(foos, t_out)
+    t = getproperty.(foos, :t)
+    x = getproperty.(foos, :x)
+    y = getproperty.(foos, :y)
+
+    x_out = akima(t, x, t_out)
+    y_out = akima(t, y, t_out)
+
+    return x_out, y_out
+end
+
+function akima_sfsa(foos, t_out)
+    t = SingleFieldStructArray(foos, :t)
+    x = SingleFieldStructArray(foos, :x)
+    y = SingleFieldStructArray(foos, :y)
+
+    x_out = akima(t, x, t_out)
+    y_out = akima(t, y, t_out)
+
+    return x_out, y_out
+end
+
+@benchmark akima_getproperty($foos, $t_out)
+BenchmarkTools.Trial:
+  memory estimate:  30.53 KiB
+  allocs estimate:  323
+  --------------
+  minimum time:     63.470 μs (0.00% GC)
+  median time:      67.492 μs (0.00% GC)
+  mean time:        72.031 μs (2.08% GC)
+  maximum time:     2.790 ms (93.61% GC)
+  --------------
+  samples:          10000
+  evals/sample:     1
+
+@benchmark akima_sfsa($foos, $t_out)
+BenchmarkTools.Trial:
+  memory estimate:  22.11 KiB
+  allocs estimate:  20
+  --------------
+  minimum time:     58.077 μs (0.00% GC)
+  median time:      61.565 μs (0.00% GC)
+  mean time:        65.105 μs (0.90% GC)
+  maximum time:     1.695 ms (89.63% GC)
+  --------------
+  samples:          10000
+  evals/sample:     1
+```
+
+So, a bit faster. But what if we pass in working arrays to avoid allocating
+inside the function?
+
+```julia
+function akima_cache_loop(foos, t_out, cache)
+    for i in eachindex(foos)
+        @inbounds cache.t[i] = foos[i].t
+        @inbounds cache.x[i] = foos[i].x
+        @inbounds cache.y[i] = foos[i].y
+    end
+
+    x_out = akima(cache.t, cache.x, t_out)
+    y_out = akima(cache.t, cache.y, t_out)
+
+    return x_out, y_out
+end
+
+cache = Foo3(similar(t), similar(x), similar(y))
+
+@benchmark akima_cache_loop($foos, $t_out, $cache)
+BenchmarkTools.Trial:
+  memory estimate:  21.91 KiB
+  allocs estimate:  14
+  --------------
+  minimum time:     59.594 μs (0.00% GC)
+  median time:      63.170 μs (0.00% GC)
+  mean time:        68.953 μs (0.87% GC)
+  maximum time:     1.834 ms (85.47% GC)
+  --------------
+  samples:          10000
+  evals/sample:     1
+```
+
+The `SingleFieldStructArray` approach is still a bit faster! And not requiring
+the caller to pass in an extra `cache` array is handy.
+
+You can try these benchmarks yourself in `perf/benchmarks.jl`.
