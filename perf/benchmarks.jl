@@ -11,15 +11,8 @@ struct Foo3{T1,T2,T3}
     y::T3
 end
 
-struct Foo3Array{T1,T2,T3,T4}
-    t::T1
-    x::T2
-    y::T3
-    z::T4
-end
-
 function run_benchmarks(; load_params=true, save_params=false)
-    n_cp = 11
+    n_cp = 51
     t = range(0.0, 1.0, length=n_cp)
     x = @. sin(2*pi*(t-0.2)) + 0.3*sin(4*pi*(t-0.3))
     y = @. 1.5*sin(2*pi*(t-0.5)) + 0.5*sin(4*pi*(t-0.2))
@@ -27,7 +20,7 @@ function run_benchmarks(; load_params=true, save_params=false)
 
     cache = Foo3(similar(t), similar(x), similar(y))
 
-    n_out = 101
+    n_out = 1001
     t_out = range(t[1], t[end], length=n_out)
     x_out = similar(t_out)
     y_out = similar(t_out)
@@ -41,10 +34,10 @@ function run_benchmarks(; load_params=true, save_params=false)
     s_scalars["getproperty"] = @benchmarkable akima_getproperty($foos, $t_out)
     s_scalars["cache"] = @benchmarkable akima_cache($foos, $t_out, $cache)
     s_scalars["cache_loop"] = @benchmarkable akima_cache_loop($foos, $t_out, $cache)
-
-    s_scalars["cache_loop_no_alloc"] = @benchmarkable akima_cache_loop_no_alloc!($x_out, $y_out, $foos, $t_out, $cache)
     s_scalars["SingleFieldStructArray"] = @benchmarkable akima_sfsa($foos, $t_out)
-    s_scalars["SingleFieldStructArray_no_alloc"] = @benchmarkable akima_sfsa_no_alloc!($foos_out, $foos)
+
+    s_scalars["cache_loop_no_alloc!"] = @benchmarkable akima_cache_loop_no_alloc!($x_out, $y_out, $foos, $t_out, $cache)
+    s_scalars["SingleFieldStructArray_no_alloc!"] = @benchmarkable akima_sfsa_no_alloc!($foos_out, $foos)
 
     if load_params && isfile(paramsfile)
         # Load the benchmark parameters.
@@ -173,13 +166,13 @@ function compare_benchmarks(; load_params=true, save_params=false)
     display(judge(median(rnew), median(rold)))
 
     println("SingleFieldStructArrays mutating vs cache with loop mutating, scalars:")
-    rold = results["struct_scalars"]["cache_loop_no_alloc"]
-    rnew = results["struct_scalars"]["SingleFieldStructArray_no_alloc"]
+    rold = results["struct_scalars"]["cache_loop_no_alloc!"]
+    rnew = results["struct_scalars"]["SingleFieldStructArray_no_alloc!"]
     display(judge(median(rnew), median(rold)))
 
     return suite, results
 end
 
 if !isinteractive()
-    compare_benchmarks(load_params=false, save_params=true)
+    compare_benchmarks()
 end
