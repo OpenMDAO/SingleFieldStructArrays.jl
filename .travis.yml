@@ -7,7 +7,6 @@ julia:
   - 1.0
   - 1.5
   - nightly
-matrix:
 notifications:
   email: true
 # https://juliadocs.github.io/Documenter.jl/stable/man/hosting/#Travis-CI
