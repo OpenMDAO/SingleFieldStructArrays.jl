@@ -69,7 +69,7 @@ Base.@propagate_inbounds function Base.getindex(A::SingleFieldStructArray{TData,
     return @inbounds getproperty(A.data[I...], FN)::TField
 end
 
-@inline @generated function Base.setindex!(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, v, i::Int) where {TData,TStruct,FN,TField,N}
+Base.@propagate_inbounds @generated function Base.setindex!(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, v, i::Int) where {TData,TStruct,FN,TField,N}
     args = []
     for field in fieldnames(TStruct)
         if field === FN
@@ -79,10 +79,13 @@ end
         end
        push!(args, ex)
     end
-    :(A.data[i] = TStruct($(args...)))
+    quote
+        @boundscheck checkbounds(A.data, i)
+        @inbounds A.data[i] = TStruct($(args...))
+    end
 end
 
-@inline @generated function Base.setindex!(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, v, I::Vararg{Int, N}) where {TData,TStruct,FN,TField,N}
+Base.@propagate_inbounds @generated function Base.setindex!(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, v, I::Vararg{Int, N}) where {TData,TStruct,FN,TField,N}
     args = []
     for field in fieldnames(TStruct)
         if field === FN
@@ -92,7 +95,10 @@ end
         end
        push!(args, ex)
     end
-    :(A.data[I...] = TStruct($(args...)))
+    quote 
+        @boundscheck checkbounds(A.data, I...)
+        @inbounds A.data[I...] = TStruct($(args...))
+    end
 end
 
 @inline Base.length(A::SingleFieldStructArray) = length(A.data)

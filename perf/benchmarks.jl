@@ -147,32 +147,70 @@ function akima_sfsa_no_alloc!(foos_out, foos)
     return nothing
 end
 
-function compare_benchmarks(; load_params=true, save_params=false)
-    suite, results = run_benchmarks(load_params=load_params, save_params=save_params)
+function compare_benchmarks(; load_params=true, save_params=false, save_results=false)
+    suite, results_new = run_benchmarks(load_params=load_params, save_params=save_params)
+
+    # SingleFieldStructArrays vs getproperty, scalars:
+    # BenchmarkTools.TrialJudgement:
+    #   time:   -20.42% => improvement (5.00% tolerance)
+    #   memory: -27.58% => improvement (1.00% tolerance)
+
+    # SingleFieldStructArrays vs cache, scalars:
+    # BenchmarkTools.TrialJudgement:
+    #   time:   -20.27% => improvement (5.00% tolerance)
+    #   memory: -23.97% => improvement (1.00% tolerance)
+
+    # SingleFieldStructArrays vs cache with loop, scalars:
+    # BenchmarkTools.TrialJudgement:
+    #   time:   -15.31% => improvement (5.00% tolerance)
+    #   memory: +0.93% => invariant (1.00% tolerance)
+
+    # SingleFieldStructArrays mutating vs cache with loop mutating, scalars:
+    # BenchmarkTools.TrialJudgement:
+    #   time:   -26.98% => improvement (5.00% tolerance)
+    #   memory: +6.35% => regression (1.00% tolerance)
 
     println("SingleFieldStructArrays vs getproperty, scalars:")
-    rold = results["struct_scalars"]["getproperty"]
-    rnew = results["struct_scalars"]["SingleFieldStructArray"]
+    rold = results_new["struct_scalars"]["getproperty"]
+    rnew = results_new["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
     println("SingleFieldStructArrays vs cache, scalars:")
-    rold = results["struct_scalars"]["cache"]
-    rnew = results["struct_scalars"]["SingleFieldStructArray"]
+    rold = results_new["struct_scalars"]["cache"]
+    rnew = results_new["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
     println("SingleFieldStructArrays vs cache with loop, scalars:")
-    rold = results["struct_scalars"]["cache_loop"]
-    rnew = results["struct_scalars"]["SingleFieldStructArray"]
+    rold = results_new["struct_scalars"]["cache_loop"]
+    rnew = results_new["struct_scalars"]["SingleFieldStructArray"]
     display(judge(median(rnew), median(rold)))
 
     println("SingleFieldStructArrays mutating vs cache with loop mutating, scalars:")
-    rold = results["struct_scalars"]["cache_loop_no_alloc!"]
-    rnew = results["struct_scalars"]["SingleFieldStructArray_no_alloc!"]
+    rold = results_new["struct_scalars"]["cache_loop_no_alloc!"]
+    rnew = results_new["struct_scalars"]["SingleFieldStructArray_no_alloc!"]
     display(judge(median(rnew), median(rold)))
 
-    return suite, results
+    if isfile(resultsfile)
+        results_old = BenchmarkTools.load(resultsfile)[1]
+
+        println("SingleFieldStructArray current vs old, allocating output")
+        rold = results_old["struct_scalars"]["SingleFieldStructArray"]
+        rnew = results_new["struct_scalars"]["SingleFieldStructArray"]
+        display(judge(median(rnew), median(rold)))
+
+        println("SingleFieldStructArray current vs old, mutating output")
+        rold = results_old["struct_scalars"]["SingleFieldStructArray_no_alloc!"]
+        rnew = results_new["struct_scalars"]["SingleFieldStructArray_no_alloc!"]
+        display(judge(median(rnew), median(rold)))
+    end
+
+    if save_results
+        BenchmarkTools.save(resultsfile, results_new)
+    end
+
+    return suite, results_new
 end
 
 if !isinteractive()
-    compare_benchmarks()
+    compare_benchmarks(; load_params=true, save_params=false, save_results=false)
 end
