@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.com/dingraha/SingleFieldStructArrays.svg?token=vVssarhszBZxvnbDtMCo&branch=main)](https://travis-ci.com/dingraha/SingleFieldStructArrays)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://dingraha.github.io/SingleFieldStructArrays/dev)
+[![Build Status](https://travis-ci.com/OpenMDAO/SingleFieldStructArrays.svg?token=vVssarhszBZxvnbDtMCo&branch=main)](https://travis-ci.com/OpenMDAO/SingleFieldStructArrays)
 
 # SingleFieldStructArrays
 
@@ -181,5 +180,3 @@ The `SingleFieldStructArray` approach is still a bit faster! And not requiring
 the caller to pass in an extra `cache` array is handy.
 
 You can try these benchmarks yourself in `perf/benchmarks.jl`.
-
-
