@@ -3,7 +3,7 @@
 # SingleFieldStructArrays
 
 ## Quick Start
-Make an `Array` of `struct`s act like an Array of one of the fields of the
+Make an `Array` of `struct`s act like an `Array` of one of the fields of the
 `struct`.
 
 ```julia
