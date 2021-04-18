@@ -61,11 +61,17 @@ end
 
 Base.@propagate_inbounds function Base.getindex(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, i::Int) where {TData,TStruct,FN,TField,N} 
     @boundscheck checkbounds(A.data, i)
+    # Do I need the @inbounds here? Doesn't Base.@propagate_inbounds tell Julia
+    # that I want to skip all bounds checking in this block? Should be
+    # equivalent to adding @inbounds to every line.
     return @inbounds getproperty(A.data[i], FN)::TField
 end
 
 Base.@propagate_inbounds function Base.getindex(A::SingleFieldStructArray{TData, TStruct, FN, TField, N}, I::Vararg{Int, N}) where {TData,TStruct,FN,TField,N} 
     @boundscheck checkbounds(A.data, I...)
+    # Do I need the @inbounds here? Doesn't Base.@propagate_inbounds tell Julia
+    # that I want to skip all bounds checking in this block? Should be
+    # equivalent to adding @inbounds to every line.
     return @inbounds getproperty(A.data[I...], FN)::TField
 end
 
@@ -81,6 +87,9 @@ Base.@propagate_inbounds @generated function Base.setindex!(A::SingleFieldStruct
     end
     quote
         @boundscheck checkbounds(A.data, i)
+        # Do I need the @inbounds here? Doesn't Base.@propagate_inbounds tell Julia
+        # that I want to skip all bounds checking in this block? Should be
+        # equivalent to adding @inbounds to every line.
         @inbounds A.data[i] = TStruct($(args...))
     end
 end
@@ -97,6 +106,9 @@ Base.@propagate_inbounds @generated function Base.setindex!(A::SingleFieldStruct
     end
     quote 
         @boundscheck checkbounds(A.data, I...)
+        # Do I need the @inbounds here? Doesn't Base.@propagate_inbounds tell Julia
+        # that I want to skip all bounds checking in this block? Should be
+        # equivalent to adding @inbounds to every line.
         @inbounds A.data[I...] = TStruct($(args...))
     end
 end
