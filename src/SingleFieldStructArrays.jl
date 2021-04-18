@@ -55,6 +55,7 @@ function SingleFieldStructArray(data, fieldname::Symbol)
     return SingleFieldStructArray{TData, TStruct, fieldname, TField, N}(data)
 end
 
+
 @inline Base.size(A::SingleFieldStructArray) = size(A.data)
 
 @inline Base.IndexStyle(::Type{<:SingleFieldStructArray{TData, TStruct, FN, TField, N}}) where {TData,TStruct,FN,TField,N} = Base.IndexStyle(TData)
