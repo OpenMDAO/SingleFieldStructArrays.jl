@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/OpenMDAO/SingleFieldStructArrays.svg?token=vVssarhszBZxvnbDtMCo&branch=main)](https://travis-ci.com/OpenMDAO/SingleFieldStructArrays)
+[![Tests](https://github.com/dingraha/SingleFieldStructArrays/actions/workflows/test.yaml/badge.svg)](https://github.com/dingraha/SingleFieldStructArrays/actions/workflows/test.yaml)
 
 # SingleFieldStructArrays
 
