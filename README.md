@@ -183,3 +183,4 @@ You can try these benchmarks yourself in `perf/benchmarks.jl`.
 
 # Software Quality Assurance
 This repository only allows signed commits to be merged into the `main` branch.
+Let's see if not signing a random change causes problems...
