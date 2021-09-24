@@ -182,4 +182,5 @@ the caller to pass in an extra `cache` array is handy.
 You can try these benchmarks yourself in `perf/benchmarks.jl`.
 
 # Software Quality Assurance
-This repository only allows signed commits to be merged into the `main` branch.
+* This repository contains extensive tests run by GitHub Actions.
+* This repository only allows signed commits to be merged into the `main` branch.
