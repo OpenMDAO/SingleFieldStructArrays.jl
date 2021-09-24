@@ -119,5 +119,3 @@ end
 @inline Base.axes(A::SingleFieldStructArray) = axes(A.data)
 
 end # module
-
-# GoGo GitHub Actions
