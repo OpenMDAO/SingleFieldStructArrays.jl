@@ -180,3 +180,6 @@ The `SingleFieldStructArray` approach is still a bit faster! And not requiring
 the caller to pass in an extra `cache` array is handy.
 
 You can try these benchmarks yourself in `perf/benchmarks.jl`.
+
+# Software Quality Assurance
+This repository only allows signed commits to be merged into the `main` branch.
