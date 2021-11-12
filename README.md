@@ -16,8 +16,8 @@ end
 foos = Foo3.([0.0, 1.0], [2.0, 3.0], [4.0, 5.0])
 
 using SingleFieldStructArrays
-t_sfsa = SingleFieldStructArray(foos, :t)
-x_sfsa = SingleFieldStructArray(foos, :x)
+t_sfsa = SingleFieldStructArray(foos, Val{:t})
+x_sfsa = SingleFieldStructArray(foos, Val{:x})
 
 @show t_sfsa[1]
 t_sfsa[1] = 0.0
@@ -78,8 +78,8 @@ And now you can, with SingleFieldStructArrays:
 
 ```julia
 using SingleFieldStructArrays
-t_sfsa = SingleFieldStructArray(foos, :t)
-x_sfsa = SingleFieldStructArray(foos, :x)
+t_sfsa = SingleFieldStructArray(foos, Val{:t})
+x_sfsa = SingleFieldStructArray(foos, Val{:x})
 x_out2 = akima(t_sfsa, x_sfsa, t_out)
 ```
 
@@ -106,9 +106,9 @@ function akima_getproperty(foos, t_out)
 end
 
 function akima_sfsa(foos, t_out)
-    t = SingleFieldStructArray(foos, :t)
-    x = SingleFieldStructArray(foos, :x)
-    y = SingleFieldStructArray(foos, :y)
+    t = SingleFieldStructArray(foos, Val{:t})
+    x = SingleFieldStructArray(foos, Val{:x})
+    y = SingleFieldStructArray(foos, Val{:y})
 
     x_out = akima(t, x, t_out)
     y_out = akima(t, y, t_out)
