@@ -102,9 +102,9 @@ end
 
 # SingleFieldStructArray.
 function akima_sfsa(foos, t_out)
-    t = SingleFieldStructArray(foos, :t)
-    x = SingleFieldStructArray(foos, :x)
-    y = SingleFieldStructArray(foos, :y)
+    t = SingleFieldStructArray(foos, Val{:t})
+    x = SingleFieldStructArray(foos, Val{:x})
+    y = SingleFieldStructArray(foos, Val{:y})
 
     x_out = akima(t, x, t_out)
     y_out = akima(t, y, t_out)
@@ -131,13 +131,13 @@ end
 
 # SingleFieldStructArray, mutating.
 function akima_sfsa_no_alloc!(foos_out, foos)
-    t = SingleFieldStructArray(foos, :t)
-    x = SingleFieldStructArray(foos, :x)
-    y = SingleFieldStructArray(foos, :y)
+    t = SingleFieldStructArray(foos, Val{:t})
+    x = SingleFieldStructArray(foos, Val{:x})
+    y = SingleFieldStructArray(foos, Val{:y})
 
-    t_out = SingleFieldStructArray(foos_out, :t)
-    x_out = SingleFieldStructArray(foos_out, :x)
-    y_out = SingleFieldStructArray(foos_out, :y)
+    t_out = SingleFieldStructArray(foos_out, Val{:t})
+    x_out = SingleFieldStructArray(foos_out, Val{:x})
+    y_out = SingleFieldStructArray(foos_out, Val{:y})
 
     spline = Akima(t, x)
     x_out .= spline.(t_out)

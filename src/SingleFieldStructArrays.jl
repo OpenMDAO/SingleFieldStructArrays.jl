@@ -7,7 +7,7 @@ struct SingleFieldStructArray{TData, TStruct, FN, TField, N} <: AbstractArray{TF
 end
 
 """
-    SingleFieldStructArray(data, fieldname::Symbol)
+    SingleFieldStructArray(data, Val{fieldname})
 
 Create a SingleFieldStructArray from an array of structs (`data`) that acts like an array of the values of `fieldname`. 
 
@@ -22,7 +22,7 @@ julia> foo3s = Foo3.(1:5, 6:10, 11:15)
  Foo3{Int64}(4, 9, 14)
  Foo3{Int64}(5, 10, 15)
 
-julia> as = SingleFieldStructArray(foo3s, :a)
+julia> as = SingleFieldStructArray(foo3s, Val{:a})
 5-element SingleFieldStructArray{Array{Foo3{Int64},1},Foo3{Int64},:a,Int64,1}:
  1
  2
@@ -47,11 +47,10 @@ julia> foo3s
 julia>
 ```
 """
-function SingleFieldStructArray(data, fieldname::Symbol)
+function SingleFieldStructArray(data::AbstractArray{TStruct, N}, ::Type{Val{fieldname}}) where {TStruct,N,fieldname}
     TData = typeof(data)
-    TStruct = eltype(data)
+    # TStruct = eltype(data)
     TField = fieldtype(TStruct, fieldname)
-    N = ndims(data)
     return SingleFieldStructArray{TData, TStruct, fieldname, TField, N}(data)
 end
 
