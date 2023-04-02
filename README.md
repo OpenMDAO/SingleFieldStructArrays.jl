@@ -1,4 +1,4 @@
-[![Tests](https://github.com/dingraha/SingleFieldStructArrays/actions/workflows/test.yaml/badge.svg)](https://github.com/dingraha/SingleFieldStructArrays/actions/workflows/test.yaml)
+[![Tests](https://github.com/OpenMDAO/SingleFieldStructArrays/actions/workflows/test.yaml/badge.svg)](https://github.com/OpenMDAO/SingleFieldStructArrays/actions/workflows/test.yaml)
 
 # SingleFieldStructArrays
 
