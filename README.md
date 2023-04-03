@@ -1,4 +1,5 @@
 [![Tests](https://github.com/OpenMDAO/SingleFieldStructArrays.jl/actions/workflows/test.yaml/badge.svg)](https://github.com/OpenMDAO/SingleFieldStructArrays.jl/actions/workflows/test.yaml)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://OpenMDAO.github.io/SingleFieldStructArrays.jl/dev)
 
 # SingleFieldStructArrays
 
