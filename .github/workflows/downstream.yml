@@ -28,16 +28,12 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: x64
       - uses: julia-actions/julia-buildpkg@latest
-      - uses: webfactory/ssh-agent@v0.5.2
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Clone Downstream
         uses: actions/checkout@v2
         with:
           repository: ${{ matrix.package.user }}/${{ matrix.package.repo }}
           path: downstream
           ref: main
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Load this and run the downstream tests
         shell: julia --color=yes --project=downstream {0}
         run: |
