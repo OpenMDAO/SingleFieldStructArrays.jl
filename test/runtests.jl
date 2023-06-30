@@ -38,6 +38,10 @@ end
 
                 foos_b[2] = -3.0
                 @test foos[2].b ≈ -3.0
+                 
+                # @inferred will throw an error, not a failed test.
+                @inferred foos_a[2]
+                @inferred foos_b[3]
             end
 
             @testset "similar" begin
@@ -62,6 +66,9 @@ end
                 @test foos_b[2:end, 3:4] ≈ bs[2:end, 3:4]
                 foos_b[2:end, 3:4] .= -1
                 @test all(foos_b[2:end, 3:4] .== -1)
+
+                # @inferred will throw an error, not a failed test.
+                @inferred foos_b[2, 3]
             end
 
         end
@@ -81,7 +88,8 @@ end
 
                 foos_a[2] = -1
                 @test foos[2].a ≈ -1
-
+                # @inferred will throw an error, not a failed test.
+                @inferred foos_a[2]
             end
 
             @testset "similar" begin
@@ -105,6 +113,8 @@ end
                 @test foos_a[2:end, 3:4] ≈ as[2:end, 3:4]
                 foos_a[2:end, 3:4] .= -1
                 @test all(foos_a[2:end, 3:4] .== -1)
+                # @inferred will throw an error, not a failed test.
+                @inferred foos_a[2, 3]
             end
 
         end
@@ -119,6 +129,7 @@ end
             foos_diag_a = SingleFieldStructArray(foos_diag, Val{:a})
             as_diag = Diagonal(as)
 
+
             @test all(foos_diag_a .≈ as_diag)
 
             @testset "length and size" begin
@@ -130,6 +141,9 @@ end
                 @test foos_diag_a ≈ getproperty.(foos_diag, :a)
                 foos_diag_a[1, 1] = -1
                 @test foos_diag[1, 1].a == -1
+
+                # @inferred will throw an error, not a failed test.
+                @inferred foos_diag_a[2, 3]
             end
     end
 end
