@@ -1,6 +1,9 @@
 [![Tests](https://github.com/OpenMDAO/SingleFieldStructArrays.jl/actions/workflows/test.yaml/badge.svg)](https://github.com/OpenMDAO/SingleFieldStructArrays.jl/actions/workflows/test.yaml)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://OpenMDAO.github.io/SingleFieldStructArrays.jl/dev)
 
+> **Note**
+> As [pointed out by @aplavin on GitHub](https://github.com/JuliaRegistries/General/pull/86584#issuecomment-1614817978), both [`SplitApplyCombine.jl`](https://github.com/JuliaData/SplitApplyCombine.jl) and [`FlexiMaps.jl`](https://gitlab.com/aplavin/FlexiMaps.jl) provide a function `mapview` that basically does what SingleFieldStructArrays.jl can do (although only `FlexiMap.mapview` appears to allow mutating the array).
+
 # SingleFieldStructArrays
 
 ## Quick Start
